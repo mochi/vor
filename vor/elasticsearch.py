@@ -3,6 +3,7 @@ ElasticSearch stats poller that sends statistics to Graphite.
 """
 
 import simplejson
+import time
 
 from twisted.application import service
 from twisted.internet import task
@@ -109,6 +110,32 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
 
             prefix = 'es.nodes.'+ name
             if ('attributes' in node and
-                node['attributes'].get('data', 'false') != 'true'):
+                node['attributes'].get('data', 'true') != 'true'):
                 del node['indices']
             self._flattenDict(node, prefix, timestamp)
+
+
+
+class ElasticSearchHealthGraphiteService(BaseElasticSearchGraphiteService):
+    """
+    Service that polls ElasticSearch cluster health and sends it to Graphite.
+
+    @ivar protocol: The Graphite protocol.
+    @type protocol: L{vor.graphite.GraphiteLineProtocol}
+    """
+
+    API = '_cluster/health'
+
+    def flatten(self, data):
+        timestamp = time.time()
+        prefix = 'es.cluster'
+
+        # Make separate metrics for each status
+
+        status = {'green': 0,
+                  'yellow': 0,
+                  'red': 0}
+        status[data['status']] = 1
+
+        data['status'] = status
+        self._flattenDict(data, prefix, timestamp)

@@ -1,5 +1,7 @@
-from twisted.trial import unittest
 import simplejson
+import time
+
+from twisted.trial import unittest
 
 from vor.elasticsearch import ElasticSearchNodeStatsGraphiteService
 from vor.elasticsearch import ElasticSearchHealthGraphiteService
@@ -900,6 +902,8 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
          }
       },
       "-WvxxOCwRxiZNLfDJ01wWg" : {
+         "attributes" : {
+         },
          "transport" : {
             "tx_size_in_bytes" : 110660992351,
             "tx_count" : 191366777,
@@ -1373,3 +1377,69 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         self.assertEqual(
                 1354643578.331,
                 self.result['es.nodes.es-proxy.process.mem.share'][1])
+
+
+
+class ElasticSearchHealthGraphiteServiceTest(unittest.TestCase):
+
+    def setUp(self):
+        self.collector = ElasticSearchHealthGraphiteService(
+            'http://localhost:9200/')
+        self.collector.protocol = FakeGraphiteProtocol()
+        stats = """
+{
+    "cluster_name": "elasticsearch",
+    "status": "green",
+    "timed_out": false,
+    "number_of_nodes": 5,
+    "number_of_data_nodes": 4,
+    "active_primary_shards": 65,
+    "active_shards": 130,
+    "relocating_shards": 0,
+    "initializing_shards": 0,
+    "unassigned_shards": 0
+
+}"""
+
+        data = simplejson.loads(stats)
+        self.collector.flatten(data)
+        self.result = self.collector.protocol.output
+
+
+    def test_active_shards(self):
+        """
+        Active shards metric is present.
+        """
+        self.assertEqual(130, self.result['es.cluster.active_shards'][0])
+
+
+    def test_timestamp(self):
+        """
+        Metrics have a timestamp.
+        """
+        self.assertApproximates(time.time(),
+                                self.result['es.cluster.active_shards'][1],
+                                3)
+
+
+    def test_status(self):
+        """
+        A status is given its own metric.
+        """
+        self.assertEqual(1, self.result['es.cluster.status.green'][0])
+        self.assertEqual(0, self.result['es.cluster.status.yellow'][0])
+        self.assertEqual(0, self.result['es.cluster.status.red'][0])
+
+
+    def test_statusYellow(self):
+        """
+        For status yellow to other metrics are 0.
+        """
+        stats = """{"status": "yellow"}"""
+        data = simplejson.loads(stats)
+        self.collector.flatten(data)
+        self.result = self.collector.protocol.output
+
+        self.assertEqual(0, self.result['es.cluster.status.green'][0])
+        self.assertEqual(1, self.result['es.cluster.status.yellow'][0])
+        self.assertEqual(0, self.result['es.cluster.status.red'][0])
