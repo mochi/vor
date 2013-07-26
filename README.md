@@ -4,7 +4,7 @@ Vör
 What is this?
 =============
 
-Vör is a set of services for gathering metrics by polling services and delivering
+Vör is a set of services for gathering metrics by polling systems and delivering
 them to graphite.
 
 Currently there is support for polling metrics from elasticsearch with more to follow!
