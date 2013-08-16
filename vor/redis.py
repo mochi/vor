@@ -73,7 +73,7 @@ class RedisGraphiteService(service.Service):
         return defer.gatherResults(dl)
 
 
-    def l(self):
+    def poll(self):
         if not self.factory.client:
             return None
 
