@@ -14,13 +14,13 @@ class RedisGraphiteService(service.Service):
     """
     Redis list lenght poller service.
 
-    This retrieves the existing lists starting with 'queue:' and retrieves
-    the list lenghts to post to Graphite.
+    This retrieves the lists matching L{keysPattern} and retrieves the list
+    lenghts to post to Graphite.
     """
 
     def __init__(self, reactor, host, port, keysPattern):
         """
-        @param keys: List of keys to poll the list length for.
+        @param keysPattern: Pattern of keys to poll the list length for.
         """
         self.reactor = reactor
         self.host = host
