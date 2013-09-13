@@ -55,7 +55,7 @@ class BaseElasticSearchGraphiteService(service.Service):
                 self._flattenValue(None, item, flatKey, '%d' % index,
                                    timestamp)
                 index += 1
-        else:
+        elif value is not None:
             # A regular metric.
             self.sendMetric(flatKey, value, timestamp)
 
@@ -142,3 +142,22 @@ class ElasticSearchHealthGraphiteService(BaseElasticSearchGraphiteService):
 
         data['status'] = status
         self._flattenDict(data, prefix, timestamp)
+
+
+
+class ElasticSearchIndexStatsGraphiteService(BaseElasticSearchGraphiteService):
+    """
+    Service that polls ElasticSearch index stats and sends them to Graphite.
+
+    @ivar protocol: The Graphite protocol.
+    @type protocol: L{vor.graphite.GraphiteLineProtocol}
+    """
+
+    suffixes = ('_in_bytes', '_in_millis')
+    API = '_status'
+
+    def flatten(self, data):
+        timestamp = time.time()
+        for name, index in data['indices'].iteritems():
+            prefix = 'es.indices.' + name.replace('.', '_')
+            self._flattenDict(index, prefix, timestamp)
