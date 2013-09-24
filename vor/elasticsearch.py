@@ -16,6 +16,9 @@ class BaseElasticSearchGraphiteService(service.Service):
 
     @ivar protocol: The Graphite protocol.
     @type protocol: L{vor.graphite.GraphiteLineProtocol}
+
+    @ivar interval: The interval time between polling.
+    @type interval: C{int}
     """
     interval = 5
     suffixes = ()
