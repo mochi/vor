@@ -45,19 +45,23 @@ class BaseElasticSearchGraphiteService(service.Service):
                     self.sendMetric(flatKey, data[suffixedKey], timestamp)
                     break
         elif hasattr(value, 'iteritems'):
-            # Dicts are flattened.
             self._flattenDict(value, flatKey, timestamp)
         elif hasattr(value, 'index'):
-            # Give each item in a sequence their own index and flatten the
-            # value.
-            index = 0
-            for item in value:
-                self._flattenValue(None, item, flatKey, '%d' % index,
-                                   timestamp)
-                index += 1
+            self._flattenSequence(value, flatKey, timestamp)
         elif value is not None:
             # A regular metric.
             self.sendMetric(flatKey, value, timestamp)
+
+
+    def _flattenSequence(self, data, prefix, timestamp):
+        """
+        Give each item in a sequence their own index and flatten the value.
+        """
+        index = 0
+        for item in data:
+            self._flattenValue(None, item, prefix, '%d' % index,
+                               timestamp)
+            index += 1
 
 
     def _flattenDict(self, data, prefix, timestamp):
@@ -92,6 +96,32 @@ class BaseElasticSearchGraphiteService(service.Service):
 
     def stopService(self):
         self.call.stop()
+
+
+
+class ElasticSearchStatsGraphiteService(BaseElasticSearchGraphiteService):
+    """
+    Service that polls ElasticSearch cluster stats and sends them to Graphite.
+
+    @ivar protocol: The Graphite protocol.
+    @type protocol: L{vor.graphite.GraphiteLineProtocol}
+    """
+
+    suffixes = ('_in_bytes', '_in_millis')
+    API = '_cluster/stats'
+
+    def flatten(self, data):
+        timestamp = data['timestamp']
+
+        prefix = 'es.cluster'
+        self._flattenDict(data, prefix, timestamp)
+
+
+    def _flattenSequence(self, data, prefix, timestamp):
+        """
+        Ignore lists, as those represent mostly static data.
+        """
+        pass
 
 
 
