@@ -24,12 +24,13 @@ class BaseElasticSearchGraphiteService(service.Service):
     suffixes = ()
     API = None
 
-    def __init__(self, baseURL):
+    def __init__(self, baseURL, prefix='es'):
         """
         @param baseURL: Base URL of the ElasticSearch API, including trailing
             slash.
         """
         self.endpoint = baseURL + self.API
+        self.prefix = prefix
         self.protocol = None
 
 
@@ -111,7 +112,7 @@ class ElasticSearchStatsGraphiteService(BaseElasticSearchGraphiteService):
     def flatten(self, data):
         timestamp = data['timestamp']
 
-        prefix = 'es.cluster'
+        prefix = '%s.cluster' % (self.prefix,)
         self._flattenDict(data, prefix, timestamp)
 
 
@@ -139,7 +140,7 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
             name = node['name']
             timestamp = node['timestamp']
 
-            prefix = 'es.nodes.'+ name
+            prefix = '%s.nodes.%s' % (self.prefix, name)
             if ('attributes' in node and
                 node['attributes'].get('data', 'true') != 'true'):
                 del node['indices']
@@ -159,7 +160,7 @@ class ElasticSearchHealthGraphiteService(BaseElasticSearchGraphiteService):
 
     def flatten(self, data):
         timestamp = time.time()
-        prefix = 'es.cluster'
+        prefix = '%s.cluster' % (self.prefix,)
 
         # Make separate metrics for each status
 
@@ -187,5 +188,5 @@ class ElasticSearchIndexStatsGraphiteService(BaseElasticSearchGraphiteService):
     def flatten(self, data):
         timestamp = time.time()
         for name, index in data['indices'].iteritems():
-            prefix = 'es.indices.' + name.replace('.', '_')
+            prefix = '%s.indices.%s' % (self.prefix, name.replace('.', '_'))
             self._flattenDict(index, prefix, timestamp)
