@@ -19,5 +19,7 @@ setup(name='vor',
           'Twisted >= 12.0.0',
           'simplejson',
           'txredis',
+          'pyyaml',
+          'pybeanstalk',
       ],
 )
