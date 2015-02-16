@@ -7,7 +7,6 @@ class GraphiteLineProtocol(LineReceiver):
 
     def connectionMade(self):
         self.service.protocol = self
-        print self.transport
 
 
     def connectionLost(self, reason):
@@ -38,3 +37,15 @@ class GraphiteClientFactory(protocol.ReconnectingClientFactory):
         p = self.protocol()
         p.service = self.service
         return p
+
+
+class FakeGraphiteProtocol(object):
+    """
+    Fake protocol that stores each metric indexed by metric path.
+    """
+    def __init__(self):
+        self.output = {}
+
+
+    def sendMetric(self, path, value, timestamp):
+        self.output[path] = (value, timestamp)

@@ -3,22 +3,10 @@ import time
 
 from twisted.trial import unittest
 
+from vor.graphite import FakeGraphiteProtocol
 from vor.elasticsearch import ElasticSearchStatsGraphiteService
 from vor.elasticsearch import ElasticSearchNodeStatsGraphiteService
 from vor.elasticsearch import ElasticSearchHealthGraphiteService
-
-class FakeGraphiteProtocol(object):
-    """
-    Fake protocol that stores each metric indexed by metric path.
-    """
-    def __init__(self):
-        self.output = {}
-
-
-    def sendMetric(self, path, value, timestamp):
-        self.output[path] = (value, timestamp)
-
-
 
 class ElasticSearchStatsGraphiteServiceTest(unittest.TestCase):
     """
