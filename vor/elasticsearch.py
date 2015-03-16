@@ -139,7 +139,7 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
 
     def flatten(self, data):
         for node in data['nodes'].itervalues():
-            name = node['name']
+            name = node['name'].split('.')[0]
             timestamp = node['timestamp']
 
             prefix = '%s.nodes.%s' % (self.prefix, name)
