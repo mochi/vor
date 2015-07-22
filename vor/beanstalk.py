@@ -10,6 +10,8 @@ from twisted.application import service
 from twisted.internet import defer, protocol, task
 from twisted.python import log
 
+from vor.graphite import sanitizeMetricElement
+
 import beanstalk
 
 class BeanstalkFactory(protocol.ReconnectingClientFactory):
@@ -39,7 +41,7 @@ class BeanstalkGraphiteService(service.Service):
 
         self.factory = BeanstalkFactory()
         self.connector = None
-        self.basePath = "beanstalk.{}".format(host.replace('.', '_'))
+        self.basePath = "beanstalk.{}".format(sanitizeMetricElement(host))
         self.lc = task.LoopingCall(self.poll)
 
 

@@ -10,6 +10,8 @@ from twisted.internet import task
 from twisted.python import log
 from twisted.web.client import getPage
 
+from vor.graphite import sanitizeMetricElement
+
 class BaseElasticSearchGraphiteService(service.Service):
     """
     Base service for polling ElasticSearch stats to send to Graphite.
@@ -188,5 +190,6 @@ class ElasticSearchIndexStatsGraphiteService(BaseElasticSearchGraphiteService):
     def flatten(self, data):
         timestamp = time.time()
         for name, index in data['indices'].iteritems():
-            prefix = '%s.indices.%s' % (self.prefix, name.replace('.', '_'))
+            prefix = '%s.indices.%s' % (self.prefix,
+                                        sanitizeMetricElement(name))
             self._flattenDict(index, prefix, timestamp)
