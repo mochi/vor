@@ -110,9 +110,6 @@ class KafkaGraphiteService(service.Service):
 
 
     def poll(self):
-        log.msg(format="Executing: '%(command)s %(args)s'",
-                command=self.command,
-                args=' '.join(self.args))
         d = utils.getProcessOutput(self.command, self.args)
         d.addCallback(parseOffsets)
         d.addCallback(self.gotOffsets, self.basePath)
