@@ -10,6 +10,8 @@ from twisted.python import log
 
 from txredis.client import RedisClientFactory
 
+from vor.graphite import sanitizeMetricElement
+
 class RedisGraphiteService(service.Service):
     """
     Redis list lenght poller service.
@@ -29,7 +31,7 @@ class RedisGraphiteService(service.Service):
 
         self.factory = RedisClientFactory()
         self.connector = None
-        self.basePath = "redis.{}.list.".format(host.replace('.', '_'))
+        self.basePath = "redis.{}.list.".format(sanitizeMetricElement(host))
         self.lc = task.LoopingCall(self.poll)
 
 
