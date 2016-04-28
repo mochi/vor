@@ -232,6 +232,9 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         self.collector = ElasticSearchNodeStatsGraphiteService(
             'http://localhost:9200/')
         self.collector.protocol = FakeGraphiteProtocol()
+        self.collector_hostname_only = ElasticSearchNodeStatsGraphiteService(
+            'http://localhost:9200/', hostname_only=True)
+        self.collector_hostname_only.protocol = FakeGraphiteProtocol()
         stats = """
 {
     "nodes" : {
@@ -1134,7 +1137,7 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
                     "passive_opens" : 288379
                 }
             },
-            "name" : "es-data",
+            "name" : "es-data.example.org",
             "hostname" : "es-data.example.org",
             "process" : {
                 "cpu" : {
@@ -1490,9 +1493,10 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
     },
     "cluster_name" : "production"
 }"""
-        data = simplejson.loads(stats)
-        self.collector.flatten(data)
+        self.collector.flatten(simplejson.loads(stats))
+        self.collector_hostname_only.flatten(simplejson.loads(stats))
         self.result = self.collector.protocol.output
+        self.result_hostname_only = self.collector_hostname_only.protocol.output
 
 
     def test_basic(self):
@@ -1500,7 +1504,9 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         There is a value for the JVM uptime on the ES data node.
         """
         self.assertEqual(109840215,
-                         self.result['es.nodes.es-data.jvm.uptime'][0])
+                         self.result['es.nodes.es-data.example.org.jvm.uptime'][0])
+        self.assertEqual(109840215,
+                         self.result_hostname_only['es.nodes.es-data.jvm.uptime'][0])
 
 
     def test_noSequence(self):
@@ -1518,13 +1524,22 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         """
         self.assertEqual(
             8.15,
-            self.result['es.nodes.es-data.os.load_average.0'][0])
+            self.result['es.nodes.es-data.example.org.os.load_average.0'][0])
         self.assertEqual(
             10.78,
-            self.result['es.nodes.es-data.os.load_average.1'][0])
+            self.result['es.nodes.es-data.example.org.os.load_average.1'][0])
         self.assertEqual(
             11.92,
-            self.result['es.nodes.es-data.os.load_average.2'][0])
+            self.result['es.nodes.es-data.example.org.os.load_average.2'][0])
+        self.assertEqual(
+            8.15,
+            self.result_hostname_only['es.nodes.es-data.os.load_average.0'][0])
+        self.assertEqual(
+            10.78,
+            self.result_hostname_only['es.nodes.es-data.os.load_average.1'][0])
+        self.assertEqual(
+            11.92,
+            self.result_hostname_only['es.nodes.es-data.os.load_average.2'][0])
 
 
     def test_fsData(self):
@@ -1533,15 +1548,20 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         """
         self.assertEqual(
             1194699919360,
-            self.result['es.nodes.es-data.fs.data.0.available'][0])
+            self.result['es.nodes.es-data.example.org.fs.data.0.available'][0])
+        self.assertEqual(
+            1194699919360,
+            self.result_hostname_only['es.nodes.es-data.fs.data.0.available'][0])
 
 
     def test_jvmMemPools(self):
         """
         The paths of JVM memory pools metric should have spaces removed.
         """
-        self.assertIn('es.nodes.es-data.jvm.mem.pools.CMSPermGen.max',
+        self.assertIn('es.nodes.es-data.example.org.jvm.mem.pools.CMSPermGen.max',
                       self.result)
+        self.assertIn('es.nodes.es-data.jvm.mem.pools.CMSPermGen.max',
+                      self.result_hostname_only)
 
 
     def test_indicesForDataNode(self):
@@ -1549,8 +1569,11 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
         Data nodes have indices paths.
         """
         self.assertIn(
-                'es.nodes.es-data.indices.docs.count',
+                'es.nodes.es-data.example.org.indices.docs.count',
                 self.result)
+        self.assertIn(
+                'es.nodes.es-data.indices.docs.count',
+                self.result_hostname_only)
 
 
     def test_noIndicesForNonDataNode(self):

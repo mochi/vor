@@ -137,9 +137,16 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
     suffixes = ('_in_bytes', '_in_millis')
     API = '_nodes/stats'
 
+    def __init__(self, *args, **kwargs):
+        self.hostname_only = kwargs.pop('hostname_only', False)
+        super(ElasticSearchNodeStatsGraphiteService, self).__init__(*args,
+                                                                    **kwargs)
+
     def flatten(self, data):
         for node in data['nodes'].itervalues():
-            name = node['name'].split('.')[0]
+            name = node['name']
+            if self.hostname_only:
+                name = name.split('.')[0]
             timestamp = node['timestamp']
 
             prefix = '%s.nodes.%s' % (self.prefix, name)
