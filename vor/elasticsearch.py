@@ -139,8 +139,11 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
 
     def __init__(self, *args, **kwargs):
         self.hostname_only = kwargs.pop('hostname_only', False)
-        super(ElasticSearchNodeStatsGraphiteService, self).__init__(*args,
-                                                                    **kwargs)
+        if type(self) != self.__class__:
+            # we're using an old version of Twisted that uses old style classes
+            BaseElasticSearchGraphiteService.__init__(self, *args, **kwargs)
+        else:
+            super(ElasticSearchNodeStatsGraphiteService, self).__init__(*args, **kwargs)
 
     def flatten(self, data):
         for node in data['nodes'].itervalues():
