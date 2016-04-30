@@ -137,9 +137,19 @@ class ElasticSearchNodeStatsGraphiteService(BaseElasticSearchGraphiteService):
     suffixes = ('_in_bytes', '_in_millis')
     API = '_nodes/stats'
 
+    def __init__(self, *args, **kwargs):
+        self.hostname_only = kwargs.pop('hostname_only', False)
+        if type(self) != self.__class__:
+            # we're using an old version of Twisted that uses old style classes
+            BaseElasticSearchGraphiteService.__init__(self, *args, **kwargs)
+        else:
+            super(ElasticSearchNodeStatsGraphiteService, self).__init__(*args, **kwargs)
+
     def flatten(self, data):
         for node in data['nodes'].itervalues():
             name = node['name']
+            if self.hostname_only:
+                name = name.split('.')[0]
             timestamp = node['timestamp']
 
             prefix = '%s.nodes.%s' % (self.prefix, name)
