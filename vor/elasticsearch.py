@@ -37,8 +37,8 @@ class BaseElasticSearchGraphiteService(service.Service):
 
 
     def _flattenValue(self, data, value, prefix, key, timestamp):
-        key = key.replace(' ', '')
-        flatKey = "%s.%s" % (prefix, key)
+        key = "%s.%s" % (prefix, key)
+        flatKey = key.replace(' ', '')
         if hasattr(value, 'upper'):
             return
         elif hasattr(value, 'iteritems'):
