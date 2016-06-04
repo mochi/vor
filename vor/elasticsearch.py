@@ -185,6 +185,23 @@ class ElasticSearchHealthGraphiteService(BaseElasticSearchGraphiteService):
         self._flattenDict(data, prefix, timestamp)
 
 
+class ElasticSearchIndicesStatsGraphiteService(BaseElasticSearchGraphiteService):
+    """
+    Service that polls ElasticSearch indices stats and send them to Graphite.
+
+    @ivar protocol: The Graphite protocol.
+    @type protocol: L{vor.graphite.GraphiteLineProtocol}
+    """
+    suffixes = ('_in_bytes', '_in_millis')
+    API = '_stats'
+
+    def flatten(self, data):
+        timestamp = time.time()
+        for name, index in data['indices'].iteritems():
+            prefix = '%s.indices.%s' % (self.prefix,
+                                        sanitizeMetricElement(name))
+            self._flattenDict(index, prefix, timestamp)
+
 
 class ElasticSearchIndexStatsGraphiteService(BaseElasticSearchGraphiteService):
     """
@@ -193,6 +210,7 @@ class ElasticSearchIndexStatsGraphiteService(BaseElasticSearchGraphiteService):
     @ivar protocol: The Graphite protocol.
     @type protocol: L{vor.graphite.GraphiteLineProtocol}
     """
+    # XXX deprecated in ES 1.2.0 and removed in ES 2.0.
 
     suffixes = ('_in_bytes', '_in_millis')
     API = '_status'
