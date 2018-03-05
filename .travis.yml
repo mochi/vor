@@ -5,18 +5,14 @@ python:
     - pypy
 
 env:
-    - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk
-    - TWISTED=Twisted==13.2.0
-    - TWISTED=Twisted==13.1.0
-    - TWISTED=Twisted==13.0.0
-    - TWISTED=Twisted==12.3.0
-    - TWISTED=Twisted==12.2.0
-    - TWISTED=Twisted==12.1.0
+    - TWISTED=https://github.com/twisted/twisted/archive/trunk.zip
+    - TWISTED=Twisted==16.0.0
+    - TWISTED=Twisted==17.9.0
 
 install:
-    - pip install pyflakes --use-mirrors
-    - pip install $TWISTED --use-mirrors
-    - pip install -r requirements.txt
+    - pip install pyflakes
+    - pip install -q $TWISTED
+    - pip install .
 
 script:
     - pyflakes vor
