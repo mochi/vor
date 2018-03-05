@@ -63,7 +63,7 @@ class GraphiteLineProtocol(LineReceiver):
         """
         Send a single metric.
         """
-        self.sendLine('%s %s %s' % (path, value, timestamp))
+        self.sendLine('%s %s %s' % (path.encode('utf-8'), value, timestamp))
 
 
 
