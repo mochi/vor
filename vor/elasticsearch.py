@@ -2,15 +2,49 @@
 ElasticSearch stats poller that sends statistics to Graphite.
 """
 
-import simplejson
 import time
 
 from twisted.application import service
 from twisted.internet import task
+from twisted.internet.ssl import CertificateOptions
 from twisted.python import log
-from twisted.web.client import getPage
+from twisted.web.iweb import IPolicyForHTTPS
+
+import treq
+
+from zope.interface import implementer
 
 from vor.graphite import sanitizeMetricElement
+
+@implementer(IPolicyForHTTPS)
+class _NoVerifyContextFactory(object):
+    """
+    Context that doesn't verify SSL connections.
+    """
+    def creatorForNetloc(self, hostname, port):
+        return CertificateOptions(verify=False)
+
+
+def _noVerifyAgent( *args, **kwargs ):
+    """Agent that suppresses TLS verification
+
+    treq.get(..., agent=_noVerifyAgent())
+
+    Returns the same agent every time...
+    """
+    if getattr(_noVerifyAgent, 'agent',None) is None:
+        from treq import api
+        reactor = api.default_reactor(kwargs.get('reactor'))
+        pool = api.default_pool(reactor,
+                            kwargs.get('pool'),
+                            kwargs.get('persistent'))
+        _noVerifyAgent.agent = api.Agent(
+            reactor,
+            contextFactory=_NoVerifyContextFactory(),
+            pool=pool
+        )
+    return _noVerifyAgent.agent
+
 
 class BaseElasticSearchGraphiteService(service.Service):
     """
@@ -26,14 +60,17 @@ class BaseElasticSearchGraphiteService(service.Service):
     suffixes = ()
     API = None
 
-    def __init__(self, baseURL, prefix='es'):
+    def __init__(self, baseURL, prefix='es', auth=None):
         """
         @param baseURL: Base URL of the ElasticSearch API, including trailing
             slash.
         """
         self.endpoint = baseURL + self.API
         self.prefix = prefix
+        self.auth = auth
+
         self.protocol = None
+        self.treq = treq.client.HTTPClient(_noVerifyAgent())
 
 
     def _flattenValue(self, data, value, prefix, key, timestamp):
@@ -83,8 +120,8 @@ class BaseElasticSearchGraphiteService(service.Service):
 
 
     def collectStats(self):
-        d = getPage(self.endpoint)
-        d.addCallback(simplejson.loads)
+        d = self.treq.get(self.endpoint, auth=self.auth)
+        d.addCallback(treq.json_content)
         d.addCallback(self.flatten)
         d.addErrback(log.err)
         return d

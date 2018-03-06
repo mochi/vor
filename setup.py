@@ -16,10 +16,11 @@ setup(name='vor',
       ],
       zip_safe=False,
       install_requires=[
-          'Twisted >= 12.0.0',
+          'Twisted[tls] >= 16.0.0',
           'simplejson',
           'txredis',
           'pyyaml',
           'pybeanstalk',
+          'treq >= 16.12.0',
       ],
 )
