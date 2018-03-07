@@ -1,0 +1,1 @@
+vor.elasticsearch pollers now remove spaces from metric names.

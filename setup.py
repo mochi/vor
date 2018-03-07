@@ -2,25 +2,48 @@
 
 from setuptools import setup
 
+with open('README.rst', 'r') as f:
+    long_description = f.read()
+
 setup(name='vor',
-      version='0.0.1',
-      description='Services for gatheric metrics to send to Graphite',
+      description='Services for gathering metrics to send to Graphite',
+      long_description=long_description,
       maintainer='Ralph Meijer',
       maintainer_email='ralphm@ik.nu',
       url='http://github.com/ralphm/vor',
       license='MIT',
       platforms='any',
+      classifiers=[
+          'Programming Language :: Python :: 2.7',
+      ],
       packages=[
           'vor',
           'vor.test',
       ],
       zip_safe=False,
-      install_requires=[
-          'Twisted[tls] >= 16.0.0',
-          'simplejson',
-          'txredis',
-          'pyyaml',
-          'pybeanstalk',
-          'treq >= 16.12.0',
+      setup_requires=[
+          'incremental>=16.9.0',
       ],
+      use_incremental=True,
+      install_requires=[
+          'incremental>=16.9.0',
+          'Twisted[tls] >= 16.0.0',
+      ],
+      extras_require={
+          'elasticsearch': [
+              'treq >= 16.12.0',
+          ],
+          'redis': [
+              'txredis',
+          ],
+          'beanstalk': [
+              'pyyaml',
+              'pybeanstalk',
+          ],
+          'dev': [
+              'pyflakes',
+              'coverage',
+              'towncrier',
+          ],
+      },
 )

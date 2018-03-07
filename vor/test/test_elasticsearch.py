@@ -1,4 +1,4 @@
-import simplejson
+import json
 import time
 
 from twisted.trial import unittest
@@ -205,7 +205,7 @@ class ElasticSearchStatsGraphiteServiceTest(unittest.TestCase):
 
 }"""
 
-        data = simplejson.loads(stats)
+        data = json.loads(stats)
         self.collector.flatten(data)
         self.result = self.collector.protocol.output
 
@@ -1493,8 +1493,8 @@ class ElasticSearchNodeStatsGraphiteServiceTest(unittest.TestCase):
     },
     "cluster_name" : "production"
 }"""
-        self.collector.flatten(simplejson.loads(stats))
-        self.collector_hostname_only.flatten(simplejson.loads(stats))
+        self.collector.flatten(json.loads(stats))
+        self.collector_hostname_only.flatten(json.loads(stats))
         self.result = self.collector.protocol.output
         self.result_hostname_only = self.collector_hostname_only.protocol.output
 
@@ -1631,7 +1631,7 @@ class ElasticSearchHealthGraphiteServiceTest(unittest.TestCase):
 
 }"""
 
-        data = simplejson.loads(stats)
+        data = json.loads(stats)
         self.collector.flatten(data)
         self.result = self.collector.protocol.output
 
@@ -1666,7 +1666,7 @@ class ElasticSearchHealthGraphiteServiceTest(unittest.TestCase):
         For status yellow to other metrics are 0.
         """
         stats = """{"status": "yellow"}"""
-        data = simplejson.loads(stats)
+        data = json.loads(stats)
         self.collector.flatten(data)
         self.result = self.collector.protocol.output
 
