@@ -10,9 +10,8 @@ env:
     - TWISTED=Twisted==17.9.0
 
 install:
-    - pip install pyflakes
     - pip install -q $TWISTED
-    - pip install .
+    - pip install .[dev,beanstalk,elasticsearch,redis]
 
 script:
     - pyflakes vor

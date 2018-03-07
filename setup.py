@@ -37,7 +37,6 @@ setup(name='vor',
               'txredis',
           ],
           'beanstalk': [
-              'pyyaml',
               'pybeanstalk',
           ],
           'dev': [
